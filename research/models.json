@@ -1,0 +1,683 @@
+{
+  "generated_at_utc": "2026-11-16T14:04:19.759397+00:00",
+  "requested_history_years": 5,
+  "timeframes": [
+    "1D",
+    "4H",
+    "1H"
+  ],
+  "markets": {
+    "training": "Binance USD-M futures public archived OHLCV",
+    "calling": "Bitunix USD-M futures public hourly OHLCV"
+  },
+  "methods": {
+    "selection": "TRAIN > VALIDATION > holdout TEST (test not used in hyperparameter ranking)",
+    "signals": [
+      "mechanical FVG retest",
+      "sweep and reclaim",
+      "EMA pullback with close confirmation"
+    ],
+    "execution": "signal on closed 1H; next 1H open; conservative SL-first; one position at a time",
+    "roundtrip_fee_and_slippage_pct": 0.15,
+    "funding_and_liquidation": "not modeled",
+    "risk_guard": "NOT auto trade; calls conditional"
+  },
+  "pairs": {
+    "BTCUSDT": {
+      "symbol": "BTCUSDT",
+      "data": {
+        "symbol": "BTCUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43810,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    },
+    "ETHUSDT": {
+      "symbol": "ETHUSDT",
+      "data": {
+        "symbol": "ETHUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43810,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    },
+    "SOLUSDT": {
+      "symbol": "SOLUSDT",
+      "data": {
+        "symbol": "SOLUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43690,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 2
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 3,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "SELECTED",
+      "deployment_eligible": false,
+      "deployment_gate_note": "Holdout is also used as conservative deployment gate; this makes deployed-model selection subject to testing bias.",
+      "selected": {
+        "setup": "fvg",
+        "trend": "steady",
+        "stop_atr": 0.8,
+        "rr": 4.0,
+        "max_hold": 48
+      },
+      "selection_score": 1.4757,
+      "train": {
+        "trades": 321,
+        "win_rate": 25.23,
+        "expectancy_r": 0.0456,
+        "net_r": 14.626,
+        "profit_factor": 1.054,
+        "max_dd_r": 37.846
+      },
+      "validation": {
+        "trades": 114,
+        "win_rate": 29.82,
+        "expectancy_r": 0.2813,
+        "net_r": 32.07,
+        "profit_factor": 1.362,
+        "max_dd_r": 12.134
+      },
+      "test": {
+        "trades": 105,
+        "win_rate": 24.76,
+        "expectancy_r": -0.003,
+        "net_r": -0.314,
+        "profit_factor": 0.997,
+        "max_dd_r": 27.787
+      },
+      "recent_test_trades": [
+        {
+          "time": "2026-10-29T03:00:00+00:00",
+          "exit": "2026-10-29T05:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 99.63,
+          "sl": 100.41342857,
+          "tp": 96.49628571,
+          "exit_price": 100.41342857,
+          "exit_reason": "SL",
+          "net_r": -1.191508
+        },
+        {
+          "time": "2026-10-29T06:00:00+00:00",
+          "exit": "2026-10-29T13:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 100.03,
+          "sl": 100.82085714,
+          "tp": 96.86657143,
+          "exit_price": 100.82085714,
+          "exit_reason": "SL",
+          "net_r": -1.190475
+        },
+        {
+          "time": "2026-11-01T22:00:00+00:00",
+          "exit": "2026-11-01T23:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 93.7,
+          "sl": 94.51496429,
+          "tp": 90.44014286,
+          "exit_price": 94.51496429,
+          "exit_reason": "SL",
+          "net_r": -1.173212
+        },
+        {
+          "time": "2026-11-03T01:00:00+00:00",
+          "exit": "2026-11-03T12:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 92.3,
+          "sl": 93.15485714,
+          "tp": 88.88057143,
+          "exit_price": 93.15485714,
+          "exit_reason": "SL",
+          "net_r": -1.162707
+        },
+        {
+          "time": "2026-11-07T09:00:00+00:00",
+          "exit": "2026-11-08T21:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 90.02,
+          "sl": 90.36685714,
+          "tp": 88.63257143,
+          "exit_price": 88.63257143,
+          "exit_reason": "TP",
+          "net_r": 3.613704
+        },
+        {
+          "time": "2026-11-09T03:00:00+00:00",
+          "exit": "2026-11-10T13:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 87.43,
+          "sl": 88.38428571,
+          "tp": 83.61285714,
+          "exit_price": 83.61285714,
+          "exit_reason": "TP",
+          "net_r": 3.865573
+        },
+        {
+          "time": "2026-11-10T19:00:00+00:00",
+          "exit": "2026-11-11T01:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 82.9,
+          "sl": 83.88971429,
+          "tp": 78.94114286,
+          "exit_price": 83.88971429,
+          "exit_reason": "SL",
+          "net_r": -1.126392
+        },
+        {
+          "time": "2026-11-13T20:00:00+00:00",
+          "exit": "2026-11-13T23:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 79.97,
+          "sl": 80.65457143,
+          "tp": 77.23171429,
+          "exit_price": 77.23171429,
+          "exit_reason": "TP",
+          "net_r": 3.827774
+        },
+        {
+          "time": "2026-11-14T00:00:00+00:00",
+          "exit": "2026-11-14T14:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 77.67,
+          "sl": 78.60946429,
+          "tp": 73.91214286,
+          "exit_price": 73.91214286,
+          "exit_reason": "TP",
+          "net_r": 3.878988
+        },
+        {
+          "time": "2026-11-15T18:00:00+00:00",
+          "exit": "2026-11-15T19:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 71.11,
+          "sl": 71.88371429,
+          "tp": 68.01514286,
+          "exit_price": 71.88371429,
+          "exit_reason": "SL",
+          "net_r": -1.138611
+        }
+      ]
+    },
+    "HYPEUSDT": {
+      "symbol": "HYPEUSDT",
+      "status": "ERROR",
+      "deployment_eligible": false,
+      "error": "ValueError: Insufficient history (535 days; at least 540)"
+    },
+    "XRPUSDT": {
+      "symbol": "XRPUSDT",
+      "data": {
+        "symbol": "XRPUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43690,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 2
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    },
+    "BNBUSDT": {
+      "symbol": "BNBUSDT",
+      "data": {
+        "symbol": "BNBUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43810,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    },
+    "SUIUSDT": {
+      "symbol": "SUIUSDT",
+      "data": {
+        "symbol": "SUIUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2023-05-03T16:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 3.538,
+        "bars": 31016,
+        "missing_archive_files": 18,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2023-05-03T16:00:00+00:00",
+          "2025-06-17T01:36:00+00:00"
+        ],
+        "validation": [
+          "2025-06-17T01:36:00+00:00",
+          "2026-03-02T12:48:00+00:00"
+        ],
+        "test": [
+          "2026-03-02T12:48:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    },
+    "DOGEUSDT": {
+      "symbol": "DOGEUSDT",
+      "data": {
+        "symbol": "DOGEUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43810,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    },
+    "AVAXUSDT": {
+      "symbol": "AVAXUSDT",
+      "data": {
+        "symbol": "AVAXUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43810,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 7,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "SELECTED",
+      "deployment_eligible": false,
+      "deployment_gate_note": "Holdout is also used as conservative deployment gate; this makes deployed-model selection subject to testing bias.",
+      "selected": {
+        "setup": "fvg",
+        "trend": "steady",
+        "stop_atr": 1.3,
+        "rr": 4.0,
+        "max_hold": 48
+      },
+      "selection_score": 0.6346,
+      "train": {
+        "trades": 285,
+        "win_rate": 27.72,
+        "expectancy_r": 0.0582,
+        "net_r": 16.581,
+        "profit_factor": 1.075,
+        "max_dd_r": 18.984
+      },
+      "validation": {
+        "trades": 90,
+        "win_rate": 27.78,
+        "expectancy_r": 0.1694,
+        "net_r": 15.247,
+        "profit_factor": 1.227,
+        "max_dd_r": 17.472
+      },
+      "test": {
+        "trades": 112,
+        "win_rate": 24.11,
+        "expectancy_r": -0.1324,
+        "net_r": -14.831,
+        "profit_factor": 0.843,
+        "max_dd_r": 28.433
+      },
+      "recent_test_trades": [
+        {
+          "time": "2026-10-31T07:00:00+00:00",
+          "exit": "2026-10-31T15:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.449,
+          "sl": 8.54352857,
+          "tp": 8.07088571,
+          "exit_price": 8.54352857,
+          "exit_reason": "SL",
+          "net_r": -1.134821
+        },
+        {
+          "time": "2026-11-01T21:00:00+00:00",
+          "exit": "2026-11-02T19:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.663,
+          "sl": 8.75075,
+          "tp": 8.312,
+          "exit_price": 8.312,
+          "exit_reason": "TP",
+          "net_r": 3.854915
+        },
+        {
+          "time": "2026-11-03T01:00:00+00:00",
+          "exit": "2026-11-03T10:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.369,
+          "sl": 8.48405,
+          "tp": 7.9088,
+          "exit_price": 8.48405,
+          "exit_reason": "SL",
+          "net_r": -1.109863
+        },
+        {
+          "time": "2026-11-04T02:00:00+00:00",
+          "exit": "2026-11-04T04:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.357,
+          "sl": 8.47586786,
+          "tp": 7.88152857,
+          "exit_price": 8.47586786,
+          "exit_reason": "SL",
+          "net_r": -1.106207
+        },
+        {
+          "time": "2026-11-05T20:00:00+00:00",
+          "exit": "2026-11-07T20:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.348,
+          "sl": 8.52322143,
+          "tp": 7.64711429,
+          "exit_price": 8.16,
+          "exit_reason": "TIME",
+          "net_r": 1.002269
+        },
+        {
+          "time": "2026-11-07T22:00:00+00:00",
+          "exit": "2026-11-08T16:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.199,
+          "sl": 8.26604286,
+          "tp": 7.93082857,
+          "exit_price": 8.26604286,
+          "exit_reason": "SL",
+          "net_r": -1.184192
+        },
+        {
+          "time": "2026-11-09T03:00:00+00:00",
+          "exit": "2026-11-09T12:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.025,
+          "sl": 8.18341429,
+          "tp": 7.39134286,
+          "exit_price": 8.18341429,
+          "exit_reason": "SL",
+          "net_r": -1.076737
+        },
+        {
+          "time": "2026-11-13T02:00:00+00:00",
+          "exit": "2026-11-13T10:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.239,
+          "sl": 8.40117143,
+          "tp": 7.59031429,
+          "exit_price": 8.40117143,
+          "exit_reason": "SL",
+          "net_r": -1.076956
+        },
+        {
+          "time": "2026-11-14T00:00:00+00:00",
+          "exit": "2026-11-14T14:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 8.229,
+          "sl": 8.3759,
+          "tp": 7.6414,
+          "exit_price": 7.6414,
+          "exit_reason": "TP",
+          "net_r": 3.918973
+        },
+        {
+          "time": "2026-11-15T06:00:00+00:00",
+          "exit": "2026-11-15T23:00:00+00:00",
+          "direction": "SHORT",
+          "entry": 7.218,
+          "sl": 7.4429,
+          "tp": 6.3184,
+          "exit_price": 7.304,
+          "exit_reason": "TIME",
+          "net_r": -0.43082
+        }
+      ]
+    },
+    "LINKUSDT": {
+      "symbol": "LINKUSDT",
+      "data": {
+        "symbol": "LINKUSDT",
+        "source": "Binance USD-M Futures historical 1h archives",
+        "requested_from": "2021-11-16T14:00:00+00:00",
+        "requested_to": "2026-11-16T14:00:00+00:00",
+        "observed_from": "2021-11-16T14:00:00+00:00",
+        "observed_to": "2026-11-15T23:00:00+00:00",
+        "years_available": 4.998,
+        "bars": 43810,
+        "missing_archive_files": 0,
+        "errors": [],
+        "large_gaps_over_3h": 0
+      },
+      "splits": {
+        "train": [
+          "2021-11-16T14:00:00+00:00",
+          "2024-11-16T00:00:00+00:00"
+        ],
+        "validation": [
+          "2024-11-16T00:00:00+00:00",
+          "2025-11-16T00:00:00+00:00"
+        ],
+        "test": [
+          "2025-11-16T00:00:00+00:00",
+          "2026-11-16T00:00:00+00:00"
+        ]
+      },
+      "tested_variants": 48,
+      "eligible_variants": 0,
+      "selection_policy": "train+validation only; TEST not used for hyperparameter selection",
+      "cost_model": {
+        "taker_plus_slippage_each_side": 0.00075,
+        "funding_included": false,
+        "liquidation_included": false
+      },
+      "status": "NO_VALIDATED_EDGE",
+      "deployment_eligible": false
+    }
+  }
+}
