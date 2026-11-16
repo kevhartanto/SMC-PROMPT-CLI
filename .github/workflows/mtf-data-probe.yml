@@ -1,0 +1,32 @@
+name: MTF Research Data Availability Probe
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mtf-data-probe.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe historical USD-M archive and backup API
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request, urllib.error
+          urls = [
+              "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/1h/BTCUSDT-1h-2022-01.zip",
+              "https://data.binance.vision/data/futures/um/monthly/klines/HYPEUSDT/1h/HYPEUSDT-1h-2025-06.zip",
+              "https://data.binance.vision/data/futures/um/daily/klines/BTCUSDT/1h/BTCUSDT-1h-2026-11-13.zip",
+              "https://fapi.binance.com/fapi/v1/time",
+              "https://fapi.bitunix.com/api/v1/futures/market/kline?symbol=BTCUSDT&interval=1h&limit=3",
+          ]
+          for u in urls:
+              try:
+                  req=urllib.request.Request(u, headers={"User-Agent":"SMCResearch/1.0"})
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      print(r.status, r.headers.get("Content-Length"),r.headers.get("Content-Type"),u,flush=True)
+              except Exception as e:print("FAIL",type(e).__name__,str(e)[:180],u,flush=True)
+          PY
