@@ -1,0 +1,58 @@
+name: SMC Multi-Pair 4H Pre-Close Scanner
+
+on:
+  # Close of UTC 4H bars: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00.
+  # Schedule the scan 120 seconds beforehand (best effort; GitHub may delay).
+  schedule:
+    - cron: '58 3,7,11,15,19,23 * * *'
+  workflow_dispatch:
+    inputs:
+      pairs:
+        description: 'Space or comma separated futures symbols (max 30)'
+        required: false
+        default: 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT'
+        type: string
+  # Smoke-test the scheduled scanner when its workflow definition is created/changed.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/smc-scan.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smc-multi-pair-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout SMC repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install upstream SMC CLI
+        run: python -m pip install -e .
+
+      - name: Scan watchlist (public market data, read-only)
+        env:
+          SCAN_PAIRS: ${{ inputs.pairs || 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' }}
+        run: |
+          python tools/scan_pairs.py --pairs "$SCAN_PAIRS" --out scan-output
+
+      - name: Upload rank, JSON and original prompts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smc-multi-pair-${{ github.run_number }}
+          path: scan-output/
+          if-no-files-found: warn
+          retention-days: 14
