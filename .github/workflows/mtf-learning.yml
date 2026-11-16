@@ -25,6 +25,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/mtf-learning.yml'
+      - 'research/mtf_engine.py'
+      - 'research/mtf_data.py'
+      - 'research/pipeline.py'
 
 permissions:
   contents: write
