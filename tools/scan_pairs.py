@@ -101,7 +101,8 @@ def extract(prompt: str, symbol: str) -> dict:
             continue
         if direction == "SHORT":
             recent_high = ltf["highs"][-1] if ltf["highs"] else p["upper"]
-            sl = max(p["upper"], recent_high) + 0.15 * atr
+            sl = max(max(p["upper"], recent_high) + 0.15 * atr,
+                     entry + max(0.8 * atr, 0.005 * entry))
             below = sorted((x for x in htf["lows"] if x < min(entry, price)), reverse=True)
             if not below:
                 continue
@@ -109,7 +110,8 @@ def extract(prompt: str, symbol: str) -> dict:
             reward, risk = entry - tp, sl - entry
         else:
             recent_low = ltf["lows"][-1] if ltf["lows"] else p["lower"]
-            sl = min(p["lower"], recent_low) - 0.15 * atr
+            sl = min(min(p["lower"], recent_low) - 0.15 * atr,
+                     entry - max(0.8 * atr, 0.005 * entry))
             above = sorted(x for x in htf["highs"] if x > max(entry, price))
             if not above:
                 continue
@@ -210,7 +212,9 @@ def main():
     ]
     for r in results:
         frames = r.get("frames", {})
-        biases = "/".join(frames.get(k, {}).get("bias", "?")[:1] for k in ("4H", "1H", "15m"))
+        abbrev = {"BULLISH": "BULL", "BEARISH": "BEAR", "RANGING": "RANGE"}
+        biases = "/".join(abbrev.get(frames.get(k, {}).get("bias", "?"), "?")
+                          for k in ("4H", "1H", "15m"))
         fmt = lambda value: f"{value:.6g}" if isinstance(value, (int, float)) else "—"
         doc.append("| {symbol} | {status} | {bias} | {direction} | {price} | {entry} | {sl} | {tp} | {rr} | {score} |".format(
             symbol=r["symbol"], status=r["status"], bias=biases,
