@@ -1,10 +1,6 @@
 name: SMC Multi-Pair 4H Pre-Close Scanner
 
 on:
-  # Close of UTC 4H bars: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00.
-  # Schedule the scan 120 seconds beforehand (best effort; GitHub may delay).
-  schedule:
-    - cron: '58 3,7,11,15,19,23 * * *'
   workflow_dispatch:
     inputs:
       pairs:
