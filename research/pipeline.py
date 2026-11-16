@@ -176,9 +176,7 @@ def do_call(pairs: list[str], root: Path, model_path: Path, *, scheduled_scan: b
              f"Generated UTC: {payload['generated_at_utc']}",
              f"Trained UTC: {payload['trained_at']}", "",
              "Only the latest CLOSED hourly candle is eligible. Entries are reference prices, not guaranteed fills.",
-             "**No trades are placed, and no measured winning probability is supplied.**", "",
-             "| Pair | Status | Direction | Setup | Entry ref | Structural SL | TP (RR gross) | Risk % | Model OOS expectancy R |",
-             "|---|---|---|---|---:|---:|---:|---:|---:|"]
+             "**No trades are placed, and no measured winning probability is supplied.**", ""]
     if scan_info:
         lines.extend([
             f"Nominal scan UTC: {scan_info['nominal_scan_utc']}",
@@ -188,6 +186,10 @@ def do_call(pairs: list[str], root: Path, model_path: Path, *, scheduled_scan: b
             f"Important: {scan_info['data_scope']}",
             ""
         ])
+    lines += [
+        "| Pair | Status | Direction | Setup | Entry ref | Structural SL | TP (RR gross) | Risk % | Model OOS expectancy R |",
+        "|---|---|---|---|---:|---:|---:|---:|---:|"
+    ]
     for result in results:
         test = result.get("model_test") or {}
         f = lambda key: str(result.get(key, "—"))
