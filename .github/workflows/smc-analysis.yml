@@ -32,7 +32,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/smc-analysis.yml'
+      - '.github/smc-request.txt'
 
 permissions:
   contents: read
@@ -59,6 +59,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # A push to .github/smc-request.txt triggers a one-shot chat-requested analysis.
+          # The three fields are SYMBOL PRESET PROVIDER (space-separated).
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            read -r SYMBOL PRESET PROVIDER < .github/smc-request.txt
+          fi
+          case "$PRESET" in balanced|sniper|intraday|swing|scalp) ;; *) echo "Invalid preset" >&2; exit 2 ;; esac
+          case "$PROVIDER" in binance|bitunix|mexc|gate) ;; *) echo "Invalid provider" >&2; exit 2 ;; esac
+          echo "Request: symbol=$SYMBOL preset=$PRESET provider=$PROVIDER"
           if [[ ! "$SYMBOL" =~ ^[A-Z0-9]{3,25}$ ]]; then
             echo "Invalid symbol format; example: BTCUSDT" >&2
             exit 2
