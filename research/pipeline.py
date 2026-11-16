@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import logging
 from pathlib import Path
@@ -121,7 +121,35 @@ def _call_one(sym: str, model: dict):
         return {"symbol": sym, "status": "ERROR", "reason": f"{type(exc).__name__}: {exc}"}
 
 
-def do_call(pairs: list[str], root: Path, model_path: Path):
+def scheduled_timeframes(now: datetime) -> dict:
+    """Label nominal 58-minute scans, including late/delayed GitHub jobs.
+
+    All 4H and daily boundaries use exchange-standard UTC midnight alignment.
+    Example: 03:58 UTC -> next close 04:00 UTC (1H + 4H).
+             23:58 UTC -> next close 00:00 UTC (1H + 4H + 1D).
+    """
+    now = now.astimezone(timezone.utc)
+    nominal = now.replace(minute=58, second=0, microsecond=0)
+    if now < nominal:
+        nominal -= timedelta(hours=1)
+    next_close = nominal + timedelta(minutes=2)
+    due = ["1H"]
+    if next_close.hour % 4 == 0:
+        due.append("4H")
+    if next_close.hour == 0:
+        due.append("1D")
+    delay_minutes = (now - nominal).total_seconds() / 60
+    return {
+        "nominal_scan_utc": nominal.isoformat(),
+        "next_candle_close_utc": next_close.isoformat(),
+        "timeframes_due": due,
+        "delay_minutes": round(delay_minutes, 2),
+        "timing_status": "BEFORE_CLOSE" if now < next_close else "LATE_AFTER_CLOSE",
+        "data_scope": "The signal model uses the last CLOSED 1H and completed 4H/1D bars; no forming-candle confirmation.",
+    }
+
+
+def do_call(pairs: list[str], root: Path, model_path: Path, *, scheduled_scan: bool = False):
     if not model_path.is_file():
         raise SystemExit(f"Missing models file: {model_path}; run research training first")
     models = json.loads(model_path.read_text(encoding="utf-8"))
@@ -136,9 +164,11 @@ def do_call(pairs: list[str], root: Path, model_path: Path):
         outcome = _call_one(sym, model)
         results.append(outcome)
         print(f"[CALL] {sym} -> {outcome['status']}", flush=True)
+    scan_info = scheduled_timeframes(datetime.now(timezone.utc)) if scheduled_scan else None
     payload = {
         "generated_at_utc": _timestamp(),
         "trained_at": models.get("generated_at_utc"),
+        "cadence": scan_info,
         "results": results
     }
     _write_json(root / "latest-calls.json", payload)
@@ -149,6 +179,15 @@ def do_call(pairs: list[str], root: Path, model_path: Path):
              "**No trades are placed, and no measured winning probability is supplied.**", "",
              "| Pair | Status | Direction | Setup | Entry ref | Structural SL | TP (RR gross) | Risk % | Model OOS expectancy R |",
              "|---|---|---|---|---:|---:|---:|---:|---:|"]
+    if scan_info:
+        lines.extend([
+            f"Nominal scan UTC: {scan_info['nominal_scan_utc']}",
+            f"Nominal candle close UTC: {scan_info['next_candle_close_utc']}",
+            f"Scheduled timeframe checkpoints: {', '.join(scan_info['timeframes_due'])}",
+            f"Actual timing: {scan_info['timing_status']} (delay {scan_info['delay_minutes']} minutes)",
+            f"Important: {scan_info['data_scope']}",
+            ""
+        ])
     for result in results:
         test = result.get("model_test") or {}
         f = lambda key: str(result.get(key, "—"))
@@ -169,6 +208,7 @@ def do_call(pairs: list[str], root: Path, model_path: Path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", required=True, choices=("train", "call"))
+    ap.add_argument("--scheduled-scan", action="store_true", help="Annotate nominal 58-minute UTC candle-close checkpoints and runner delays")
     ap.add_argument("--pairs", default=" ".join(PAIRS))
     ap.add_argument("--years", default=5, type=int)
     ap.add_argument("--cache-dir", default=".cache/mtf")
@@ -185,7 +225,7 @@ def main():
     if args.mode == "train":
         do_train(pairs, args.years, root, args.cache_dir)
     else:
-        do_call(pairs, root, Path(args.models))
+        do_call(pairs, root, Path(args.models), scheduled_scan=args.scheduled_scan)
 
 
 if __name__ == "__main__":
