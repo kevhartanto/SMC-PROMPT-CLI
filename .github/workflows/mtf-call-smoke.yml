@@ -1,0 +1,32 @@
+name: MTF Calls Integration Smoke Test
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/mtf-call-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install research dependencies
+        run: python -m pip install -e .
+      - name: Verify Bitunix live scan with stored per-pair models
+        run: |
+          python research/pipeline.py --mode call --pairs 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' --models research/models.json --out call-smoke
+          cat call-smoke/latest-calls.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mtf-call-smoke
+          path: call-smoke/
+          if-no-files-found: warn
+          retention-days: 7
