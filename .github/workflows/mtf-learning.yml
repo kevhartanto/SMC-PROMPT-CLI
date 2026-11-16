@@ -1,0 +1,116 @@
+name: SMC MTF Adaptive Research and Calls
+
+on:
+  # UTC: weekly Sunday recalibration; hourly scan runs from saved per-pair models.
+  schedule:
+    - cron: '23 0 * * 0'
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Train 5-year models or scan for fresh hourly calls'
+        type: choice
+        required: true
+        default: train
+        options:
+          - train
+          - call
+      pairs:
+        description: 'Optional: space-separated list of symbols (train default 10; call default all 10)'
+        type: string
+        required: false
+        default: 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT'
+  # First-time smoke test of this workflow and future edits.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/mtf-learning.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'train') || (github.event_name == 'schedule' && github.event.schedule == '23 0 * * 0')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: mtf-model-train
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Restore USD-M futures market history cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/mtf
+          key: mtf-archive-v1-${{ github.run_id }}
+          restore-keys: |
+            mtf-archive-v1-
+      - name: Install and compile code
+        run: |
+          python -m pip install -e .
+          python -m compileall -q research
+      - name: Backtest and learn per pair (1H 4H 1D)
+        env:
+          PAIRS: ${{ inputs.pairs || 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' }}
+        run: |
+          python research/pipeline.py --mode train --years 5 --pairs "$PAIRS" --out research-results --cache-dir .cache/mtf
+          cat research-results/train-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Save trained strategy parameters to repository
+        if: success()
+        shell: bash
+        run: |
+          cp research-results/models.json research/models.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/models.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Calibrate per-pair MTF 1D/4H/1H models from historical data"
+            git push origin HEAD:main
+          fi
+      - name: Upload research report and models
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mtf-train-${{ github.run_number }}
+          path: research-results/
+          if-no-files-found: warn
+          retention-days: 30
+
+  call:
+    if: (github.event_name == 'workflow_dispatch' && inputs.mode == 'call') || (github.event_name == 'schedule' && github.event.schedule == '17 * * * *')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: mtf-hourly-calls
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -e .
+      - name: Evaluate fresh closed hourly candle using trained models
+        env:
+          PAIRS: ${{ inputs.pairs || 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' }}
+        run: |
+          python research/pipeline.py --mode call --pairs "$PAIRS" --models research/models.json --out research-results
+          cat research-results/latest-calls.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload conditional calls and explanations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mtf-calls-${{ github.run_number }}
+          path: research-results/
+          if-no-files-found: warn
+          retention-days: 14
