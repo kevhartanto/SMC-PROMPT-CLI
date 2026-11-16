@@ -1,14 +1,17 @@
 name: SMC MTF Adaptive Research and Calls
 
 on:
-  # UTC: weekly Sunday recalibration; hourly scan runs from saved per-pair models.
+  # Weekly Sunday recalibration (UTC 00:23).
+  # One scanner tick every hour at UTC :58. At 03/07/11/15/19/23 UTC
+  # it coincides with the next 4H boundary; at 23:58 with the next 1D boundary.
+  # One tick avoids duplicate scans where 1H/4H/1D overlap.
   schedule:
     - cron: '23 0 * * 0'
-    - cron: '17 * * * *'
+    - cron: '58 * * * *'
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Train 5-year models or scan for fresh hourly calls'
+        description: 'Train 5-year models or scan for 1H/4H/1D checkpoints'
         type: choice
         required: true
         default: train
@@ -87,7 +90,7 @@ jobs:
           retention-days: 30
 
   call:
-    if: (github.event_name == 'workflow_dispatch' && inputs.mode == 'call') || (github.event_name == 'schedule' && github.event.schedule == '17 * * * *')
+    if: (github.event_name == 'workflow_dispatch' && inputs.mode == 'call') || (github.event_name == 'schedule' && github.event.schedule == '58 * * * *')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
@@ -103,11 +106,15 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: python -m pip install -e .
-      - name: Evaluate fresh closed hourly candle using trained models
+      - name: Check 1H and coincident 4H/1D checkpoints using trained models
         env:
           PAIRS: ${{ inputs.pairs || 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' }}
         run: |
-          python research/pipeline.py --mode call --pairs "$PAIRS" --models research/models.json --out research-results
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            python research/pipeline.py --mode call --scheduled-scan --pairs "$PAIRS" --models research/models.json --out research-results
+          else
+            python research/pipeline.py --mode call --pairs "$PAIRS" --models research/models.json --out research-results
+          fi
           cat research-results/latest-calls.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload conditional calls and explanations
         if: always()
