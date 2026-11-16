@@ -17,6 +17,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/smc-scan.yml'
+      - 'tools/scan_pairs.py'
 
 permissions:
   contents: read
