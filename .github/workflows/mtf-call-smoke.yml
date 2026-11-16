@@ -21,7 +21,8 @@ jobs:
         run: python -m pip install -e .
       - name: Verify Bitunix live scan with stored per-pair models
         run: |
-          python research/pipeline.py --mode call --pairs 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' --models research/models.json --out call-smoke
+          python research/pipeline.py --mode call --scheduled-scan --pairs 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT' --models research/models.json --out call-smoke
+          grep 'Scheduled timeframe checkpoints:' call-smoke/latest-calls.md
           cat call-smoke/latest-calls.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
