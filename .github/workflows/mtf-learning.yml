@@ -23,21 +23,13 @@ on:
         type: string
         required: false
         default: 'BTCUSDT ETHUSDT SOLUSDT HYPEUSDT XRPUSDT BNBUSDT SUIUSDT DOGEUSDT AVAXUSDT LINKUSDT'
-  # First-time smoke test of this workflow and future edits.
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/mtf-learning.yml'
-      - 'research/mtf_engine.py'
-      - 'research/mtf_data.py'
-      - 'research/pipeline.py'
 
 permissions:
   contents: write
 
 jobs:
   train:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'train') || (github.event_name == 'schedule' && github.event.schedule == '23 0 * * 0')
+    if: (github.event_name == 'workflow_dispatch' && inputs.mode == 'train') || (github.event_name == 'schedule' && github.event.schedule == '23 0 * * 0')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     concurrency:
@@ -78,6 +70,9 @@ jobs:
           git add research/models.json
           if ! git diff --cached --quiet; then
             git commit -m "Calibrate per-pair MTF 1D/4H/1H models from historical data"
+            # Allow regular code edits during a scheduled model recalibration.
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
       - name: Upload research report and models
