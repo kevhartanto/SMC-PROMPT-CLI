@@ -154,6 +154,9 @@ def do_call(pairs: list[str], root: Path, model_path: Path, *, scheduled_scan: b
         raise SystemExit(f"Missing models file: {model_path}; run research training first")
     models = json.loads(model_path.read_text(encoding="utf-8"))
     known = models.get("pairs", {})
+    # Snapshot the runner start time before the market requests begin.
+    # Post-run timestamps can already be past the nominal candle close.
+    scan_info = scheduled_timeframes(datetime.now(timezone.utc)) if scheduled_scan else None
     results = []
     # Serial Bitunix pagination to honor public per-IP rate limiting.
     for sym in pairs:
@@ -164,7 +167,6 @@ def do_call(pairs: list[str], root: Path, model_path: Path, *, scheduled_scan: b
         outcome = _call_one(sym, model)
         results.append(outcome)
         print(f"[CALL] {sym} -> {outcome['status']}", flush=True)
-    scan_info = scheduled_timeframes(datetime.now(timezone.utc)) if scheduled_scan else None
     payload = {
         "generated_at_utc": _timestamp(),
         "trained_at": models.get("generated_at_utc"),
