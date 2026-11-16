@@ -21,7 +21,7 @@ import pandas as pd
 
 TIMEFRAMES = {"4h": 4, "1d": 24}
 FEE_SLIP_PER_SIDE = 0.00075  # 0.05% taker + 0.025% assumed slippage
-MIN_HIST_DAYS = 540
+MIN_HIST_DAYS = 365
 
 
 @dataclass(frozen=True)
