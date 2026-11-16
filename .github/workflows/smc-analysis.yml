@@ -1,0 +1,77 @@
+name: SMC Analysis (BTCUSDT / custom)
+
+on:
+  workflow_dispatch:
+    inputs:
+      symbol:
+        description: 'Crypto futures symbol, e.g. BTCUSDT'
+        required: true
+        default: BTCUSDT
+        type: string
+      preset:
+        description: 'Multi-timeframe trading style'
+        required: true
+        default: balanced
+        type: choice
+        options:
+          - balanced
+          - sniper
+          - intraday
+          - swing
+          - scalp
+      provider:
+        description: 'Public market data exchange (no API keys)'
+        required: true
+        default: binance
+        type: choice
+        options:
+          - binance
+          - bitunix
+          - mexc
+          - gate
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/smc-analysis.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out your fork of smc-prompt-cli
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -e .
+      - name: Generate SMC facts and prompt
+        env:
+          SYMBOL: ${{ inputs.symbol || 'BTCUSDT' }}
+          PRESET: ${{ inputs.preset || 'balanced' }}
+          PROVIDER: ${{ inputs.provider || 'binance' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$SYMBOL" =~ ^[A-Z0-9]{3,25}$ ]]; then
+            echo "Invalid symbol format; example: BTCUSDT" >&2
+            exit 2
+          fi
+          mkdir -p output
+          smc-prompt "$SYMBOL" --preset "$PRESET" --provider "$PROVIDER" --output-dir output --stdout 2>&1 | tee run.log
+      - name: Upload prompt and execution log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smc-output-${{ github.run_number }}
+          path: |
+            output/
+            run.log
+          if-no-files-found: warn
+          retention-days: 14
